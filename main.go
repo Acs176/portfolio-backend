@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"fmt"
 	"localbe/configuration"
+	"localbe/experience/pg"
 	"time"
 
 	"github.com/golang-migrate/migrate/v4"
@@ -71,53 +72,45 @@ func main() {
 	}
 
 	sourceURL := "file://" + "database/migration" // migration path
-	m, err := migrate.NewWithDatabaseInstance(sourceURL, config.Postgres.DbName, driver)
+	m, err := migrate.NewWithDatabaseInstance(sourceURL, "test_db", driver)
 	if err != nil {
 		panic(fmt.Errorf("failed to create migrate instance; error %v", err))
 	}
 
 	// check if already migrated
-	version, _, err := m.Version()
+	version, dirty, err := m.Version()
 	if err != nil && err != migrate.ErrNilVersion {
 		panic(fmt.Errorf("failed to get database version; error %v", err))
 	}
-	err = m.Force(int(version))
-	if err != nil {
-		panic(fmt.Errorf("failed to migrate database; error %v", err))
+	if dirty {
+		panic(fmt.Errorf("current DB version is dirty, FIX MANUALLY BEFORE MIGRATING AGAIN"))
 	}
-	// if dirty {
-	// 	fmt.Println("Current DB version is dirty, re-migrating")
-	// 	err = m.Force(int(version))
-	// 	if err != nil && err != migrate.ErrNoChange {
-	// 		panic(fmt.Errorf("failed to migrate database; error %v", err))
-	// 	}
-	// }
-	// if err == migrate.ErrNilVersion {
-	// 	// version is 0
-	// 	version = 0
-	// }
-	// if version == config.Postgres.DbVersion {
-	// 	fmt.Println("database is already migrated")
-	// } else {
-	// 	err = m.Migrate(config.Postgres.DbVersion)
-	// 	if err != nil && err != migrate.ErrNoChange {
-	// 		panic(fmt.Errorf("failed to migrate database; error %v", err))
-	// 	}
-	// }
+	if err == migrate.ErrNilVersion {
+		// version is 0
+		version = 0
+	}
+	if version == config.Postgres.DbVersion {
+		fmt.Println("database is already migrated")
+	} else {
+		err = m.Migrate(config.Postgres.DbVersion)
+		if err != nil && err != migrate.ErrNoChange {
+			panic(fmt.Errorf("failed to migrate database; error %v", err))
+		}
+	}
 	fmt.Println("Grande jefe, has migrado la DB")
 
-	// experienceRepo := pg.NewExperienceRepository(pgpool)
-	// e, err := experienceRepo.CreateExperienceEntry(
-	// 	ctx,
-	// 	"Zeekr Tech. EU",
-	// 	"Software Engineer",
-	// 	"Sept 2023",
-	// 	"",
-	// 	"I have done some stuff here",
-	// )
-	// if err != nil {
-	// 	panic(fmt.Errorf("failed to create an experience entry; error=%v", err))
-	// }
-	// fmt.Printf("Dale, has creado tu primer objeto en la DB: %v", e)
+	experienceRepo := pg.NewExperienceRepository(pgpool)
+	e, err := experienceRepo.CreateExperienceEntry(
+		ctx,
+		"Zeekr Tech. EU",
+		"Software Engineer",
+		"Sept 2023",
+		"",
+		"I have done some stuff here",
+	)
+	if err != nil {
+		panic(fmt.Errorf("failed to create an experience entry; error=%v", err))
+	}
+	fmt.Printf("Dale, has creado tu primer objeto en la DB: %v", e)
 
 }

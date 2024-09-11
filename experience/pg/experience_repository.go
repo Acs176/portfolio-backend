@@ -2,9 +2,11 @@ package pg
 
 import (
 	"context"
+	"fmt"
 	"localbe/experience"
 
 	"github.com/google/uuid"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -26,7 +28,7 @@ func (er *ExperienceRepository) CreateExperienceEntry(
 	end,
 	description string,
 ) (*experience.Experience, error) {
-	jobId := uuid.New().String()
+	jobId := uuid.New()
 	sqlFunc := insertExperienceEntry(jobId, companyName, position, start, end, description)
 	queryInsert, argsInsert := sqlFunc()
 
@@ -34,7 +36,7 @@ func (er *ExperienceRepository) CreateExperienceEntry(
 	if err != nil {
 		return nil, err
 	}
-
+	fmt.Println("Created")
 	e, err := er.GetExperienceEntry(ctx, jobId)
 	if err != nil {
 		return nil, err
@@ -42,13 +44,15 @@ func (er *ExperienceRepository) CreateExperienceEntry(
 	return e, nil
 }
 
-func (er *ExperienceRepository) GetExperienceEntry(ctx context.Context, jobId string) (*experience.Experience, error) {
+func (er *ExperienceRepository) GetExperienceEntry(ctx context.Context, jobId uuid.UUID) (*experience.Experience, error) {
 	sqlFunc := selectExperienceEntry(jobId)
 	querySelect, argsSelect := sqlFunc()
 
-	var experienceEntry experience.Experience
-	row := er.pgpool.QueryRow(ctx, querySelect, argsSelect)
-	err := row.Scan(&experienceEntry)
+	rows, err := er.pgpool.Query(ctx, querySelect, argsSelect...)
+	if err != nil {
+		return nil, err
+	}
+	experienceEntry, err := pgx.CollectOneRow(rows, pgx.RowToStructByName[experience.Experience])
 	if err != nil {
 		return nil, err
 	}
