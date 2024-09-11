@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS testdb_schema.experience (
     id text PRIMARY KEY,
     company_name text NOT NULL,
     position text NOT NULL,
-    start text NOT NULL,
-    end text,
-    description text NOT NULL
+    period_start text NOT NULL,
+    period_end text,
+    role_description text NOT NULL
 );

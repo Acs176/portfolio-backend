@@ -77,29 +77,47 @@ func main() {
 	}
 
 	// check if already migrated
-	version, dirty, err := m.Version()
+	version, _, err := m.Version()
 	if err != nil && err != migrate.ErrNilVersion {
 		panic(fmt.Errorf("failed to get database version; error %v", err))
 	}
-	if dirty {
-		fmt.Println("Current DB version is dirty, re-migrating")
-		err = m.Force(int(version))
-		if err != nil && err != migrate.ErrNoChange {
-			panic(fmt.Errorf("failed to migrate database; error %v", err))
-		}
+	err = m.Force(int(version))
+	if err != nil {
+		panic(fmt.Errorf("failed to migrate database; error %v", err))
 	}
-	if err == migrate.ErrNilVersion {
-		// version is 0
-		version = 0
-	}
-	if version == config.Postgres.DbVersion {
-		fmt.Println("database is already migrated")
-	} else {
-		err = m.Migrate(config.Postgres.DbVersion)
-		if err != nil && err != migrate.ErrNoChange {
-			panic(fmt.Errorf("failed to migrate database; error %v", err))
-		}
-	}
+	// if dirty {
+	// 	fmt.Println("Current DB version is dirty, re-migrating")
+	// 	err = m.Force(int(version))
+	// 	if err != nil && err != migrate.ErrNoChange {
+	// 		panic(fmt.Errorf("failed to migrate database; error %v", err))
+	// 	}
+	// }
+	// if err == migrate.ErrNilVersion {
+	// 	// version is 0
+	// 	version = 0
+	// }
+	// if version == config.Postgres.DbVersion {
+	// 	fmt.Println("database is already migrated")
+	// } else {
+	// 	err = m.Migrate(config.Postgres.DbVersion)
+	// 	if err != nil && err != migrate.ErrNoChange {
+	// 		panic(fmt.Errorf("failed to migrate database; error %v", err))
+	// 	}
+	// }
 	fmt.Println("Grande jefe, has migrado la DB")
+
+	// experienceRepo := pg.NewExperienceRepository(pgpool)
+	// e, err := experienceRepo.CreateExperienceEntry(
+	// 	ctx,
+	// 	"Zeekr Tech. EU",
+	// 	"Software Engineer",
+	// 	"Sept 2023",
+	// 	"",
+	// 	"I have done some stuff here",
+	// )
+	// if err != nil {
+	// 	panic(fmt.Errorf("failed to create an experience entry; error=%v", err))
+	// }
+	// fmt.Printf("Dale, has creado tu primer objeto en la DB: %v", e)
 
 }
