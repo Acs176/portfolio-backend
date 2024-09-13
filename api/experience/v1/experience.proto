@@ -1,0 +1,42 @@
+syntax = "proto3";
+
+option go_package = "localbe/gen/experience/v1";
+
+package experience.v1;
+
+service ExperienceService {
+    rpc CreateExperienceEntry(CreateExperienceEntryRequest) returns (CreateExperienceEntryResponse);
+    rpc GetExperienceEntry(GetExperienceEntryRequest) returns (GetExperienceEntryResponse);
+    rpc GetExperience(GetExperienceRequest) returns (GetExperienceResponse);
+}
+
+message CreateExperienceEntryRequest {
+    Experience experience = 1;
+}
+
+message CreateExperienceEntryResponse {
+    Experience experience = 1;
+}
+
+message GetExperienceEntryRequest {
+    string id = 1;
+}
+
+message GetExperienceEntryResponse {
+    Experience experience = 1;
+}
+
+message GetExperienceRequest {}
+
+message GetExperienceResponse {
+    repeated Experience experience_list = 1;
+}
+
+message Experience {
+    string id = 1;
+    string company_name = 2;
+    string position = 3;
+    string period_start = 4;
+    optional string period_end = 5;
+    string role_description = 6;
+}

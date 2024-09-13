@@ -3,3 +3,7 @@ up-docker-db:
 	docker compose up -d
 down-docker-db:
 	docker compose rm -s test-db
+
+buf-gen:
+	rm -rf gen/
+	buf generate
