@@ -1,6 +1,10 @@
 package experience
 
-import "github.com/google/uuid"
+import (
+	"context"
+
+	"github.com/google/uuid"
+)
 
 type Experience struct {
 	Id              uuid.UUID
@@ -10,3 +14,5 @@ type Experience struct {
 	PeriodEnd       string
 	RoleDescription string
 }
+
+type CreateExperienceEntryFunc func(ctx context.Context, companyName, position, start, end, description string) (*Experience, error)
