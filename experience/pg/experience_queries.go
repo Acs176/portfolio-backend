@@ -23,3 +23,12 @@ func selectExperienceEntry(id uuid.UUID) SQLFunc {
 	args := []any{id}
 	return func() (string, []any) { return query, args }
 }
+
+func selectAllExperience() SQLFunc {
+	query := `
+		SELECT id, company_name, position, period_start, period_end, role_description
+		FROM testdb_schema.experience 
+	`
+	args := []any{}
+	return func() (string, []any) { return query, args }
+}

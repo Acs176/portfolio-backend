@@ -58,3 +58,19 @@ func (er *ExperienceRepository) GetExperienceEntry(ctx context.Context, jobId uu
 	}
 	return &experienceEntry, nil
 }
+
+func (er *ExperienceRepository) GetExperience(ctx context.Context) ([]experience.Experience, error) {
+	sqlFunc := selectAllExperience()
+	querySelect, argsSelect := sqlFunc()
+
+	rows, err := er.pgpool.Query(ctx, querySelect, argsSelect...)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	experienceRows, err := pgx.CollectRows(rows, pgx.RowToStructByName[experience.Experience])
+	if err != nil {
+		return nil, err
+	}
+	return experienceRows, nil
+}
