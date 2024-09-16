@@ -6,11 +6,14 @@ toolchain go1.23.1
 
 require (
 	connectrpc.com/connect v1.16.2
+	connectrpc.com/grpcreflect v1.2.0
 	github.com/bufbuild/protovalidate-go v0.6.5
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.7.1
 	github.com/spf13/viper v1.19.0
 	github.com/stretchr/testify v1.9.0
+	golang.org/x/net v0.29.0
+	google.golang.org/protobuf v1.34.2
 )
 
 require (
@@ -50,7 +53,6 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240513163218-0867130af1f8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240513163218-0867130af1f8 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 

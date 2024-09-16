@@ -5,14 +5,21 @@ import (
 	"database/sql"
 	"fmt"
 	"localbe/configuration"
+	"localbe/experience"
 	"localbe/experience/pg"
+	"localbe/gen/experience/v1/v1connect"
+	"localbe/port/connect"
+	"net/http"
 	"time"
 
+	"connectrpc.com/grpcreflect"
 	"github.com/golang-migrate/migrate/v4"
 	migratePostgres "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"golang.org/x/net/http2"
+	"golang.org/x/net/http2/h2c"
 )
 
 var (
@@ -25,6 +32,12 @@ func init() {
 		panic(fmt.Errorf("configuration failed; err = %w", err))
 	}
 }
+
+var (
+	getExperienceEntryFunc    experience.GetExperienceEntryFunc
+	createExperienceEntryFunc experience.CreateExperienceEntryFunc
+	getExperienceFunc         experience.GetExperienceFunc
+)
 
 func main() {
 	ctx := context.Background()
@@ -113,4 +126,29 @@ func main() {
 	}
 	fmt.Printf("Dale, has creado tu primer objeto en la DB: %v", e)
 
+	// setup repository functions
+	getExperienceEntryFunc = experienceRepo.GetExperienceEntry
+	createExperienceEntryFunc = experienceRepo.CreateExperienceEntry
+	getExperienceFunc = experienceRepo.GetExperience
+	// SETUP SERVICES
+
+	mux := http.NewServeMux()
+	// grpc reflector
+	reflector := grpcreflect.NewStaticReflector(
+		v1connect.ExperienceServiceName,
+	)
+
+	experienceService, err := connect.NewExperienceService(createExperienceEntryFunc, getExperienceEntryFunc, getExperienceFunc)
+	if err != nil {
+		panic(fmt.Errorf("failed to create experience service; error=%w", err))
+	}
+	path, handler := v1connect.NewExperienceServiceHandler(experienceService)
+	mux.Handle(path, handler)
+	mux.Handle(grpcreflect.NewHandlerV1(reflector))
+	mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
+
+	http.ListenAndServe(
+		"localhost:8080",
+		h2c.NewHandler(mux, &http2.Server{}),
+	)
 }

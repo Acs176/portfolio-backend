@@ -4,6 +4,8 @@ import (
 	"errors"
 	"localbe/experience"
 	v1 "localbe/gen/experience/v1"
+
+	"github.com/google/uuid"
 )
 
 func ExperiencePbToDomain(pb *v1.CreateExperienceEntryRequest) (*experience.Experience, error) {
@@ -11,7 +13,13 @@ func ExperiencePbToDomain(pb *v1.CreateExperienceEntryRequest) (*experience.Expe
 	if pbObject == nil {
 		return nil, errors.New("pb experience is nil")
 	}
+
+	convertedUuid, err := uuid.Parse(pbObject.GetId())
+	if err != nil {
+		return nil, errors.New("uuid parse error")
+	}
 	exp := &experience.Experience{
+		Id:              convertedUuid,
 		CompanyName:     pbObject.CompanyName,
 		Position:        pbObject.Position,
 		PeriodStart:     pbObject.PeriodStart,
@@ -35,6 +43,7 @@ func ExperiencesToPb(expList []experience.Experience) ([]*v1.Experience, error) 
 
 func ExperienceToPb(exp *experience.Experience) (*v1.Experience, error) {
 	pbExp := &v1.Experience{
+		Id:              exp.Id.String(),
 		CompanyName:     exp.CompanyName,
 		Position:        exp.Position,
 		PeriodStart:     exp.PeriodStart,
